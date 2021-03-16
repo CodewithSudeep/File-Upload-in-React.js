@@ -1,48 +1,44 @@
 import React from 'react'
 import './App.css'
 
+// @imports packages
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 export default function App() {
-  const [file, setFile] = React.useState({ selectedFile: null, warning: false, uploaded: false })
+  const [file, setFile] = React.useState({ selectedFile: null, uploaded: false })
 
-  // this function check if the type of file is image/png or jpeg or not
+  // @dev store the file in a state
   const handleselectedFile = e => {
-    switch (e.target.files[0].type) {
-      case 'image/png':
-        setFile({
-          selectedFile: e.target.files[0],
-          warning: false,
-          uploaded: true
-        })
-        break;
+    setFile({
+      selectedFile: e.target.files[0],
+      uploaded: true
+    })
+  }
 
-      case 'image/jpeg':
-        setFile({
-          selectedFile: e.target.files[0],
-          warning: false,
-          uploaded: true
-        })
-        break;
+  // @dev handle upload to server
+  const handleUpload = () => {
+    const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+    const fileData = new FormData();
+    fileData.append('uploadItem', file.selectedFile);
 
-      // if not image return warning
-      default:
-        setFile({
-          selectedFile: null,
-          warning: true,
-          uploaded: false
-        })
-        break;
-    }
+    // @dev the uri should be stored in environment file i.e. dynamic
+    axios.post("http://localhost:8000/api/upload", fileData, config)
+      .then(() => {
+        toast.success("File Uploaded Successfully!")
+      }).catch((error) => {
+        console.log(error);
+      });
   }
 
   return (
     <div className="App">
-      {
-        file.warning && <div className="warning">Only Image format are allowed to upload!</div>
-      }
       <input type="file" name="" id="" onChange={handleselectedFile} className="file-input" />
       {
-        file.uploaded && <button>Upload</button>
+        file.uploaded && <button onClick={handleUpload}>Upload</button>
       }
+      <ToastContainer />
     </div>
   )
 }
